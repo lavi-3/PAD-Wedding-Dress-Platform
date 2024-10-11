@@ -5,8 +5,14 @@ import cors from 'cors';
 import timeout from "connect-timeout";
 import rateLimit from "express-rate-limit";
 import {Eureka} from "eureka-js-client";
+import { createServer } from 'http';
+import { Server } from 'socket.io';
+// import startGrpcServer from './grpcServer.js';
 
 const app = express();
+const server = createServer(app);
+const io = new Server(server);
+const lobbies = {};
 
 const client = new Eureka({
     instance: {
@@ -35,7 +41,7 @@ const client = new Eureka({
         servicePath: '/eureka/apps/'
     }
 });
-// Start Eureka client
+
 client.start(error => {
     console.log('Eureka client started with error:', error);
 });
@@ -78,7 +84,86 @@ app.get('/status', (req, res) => {
     });
 });
 
+io.on('connection', (socket) => {
+    console.log('A user connected');
+
+    // Create or join a lobby (room)
+    socket.on('joinLobby', (lobbyName, username) => {
+        // If the lobby doesn't exist, create it
+        if (!lobbies[lobbyName]) {
+            lobbies[lobbyName] = {
+                users: []
+            };
+        }
+
+        // Add user to the lobby's list
+        lobbies[lobbyName].users.push(username);
+
+        // Join the Socket.IO room
+        socket.join(lobbyName);
+        socket.currentLobby = lobbyName;
+
+        // Notify the lobby about the new user
+        io.to(lobbyName).emit('userJoined', {
+            username,
+            message: `${username} has joined the lobby ${lobbyName}.`
+    });
+
+        // Send the updated list of users in the lobby
+        io.to(lobbyName).emit('lobbyUsers', {
+            lobbyName,
+            users: lobbies[lobbyName].users
+        });
+
+        console.log(`${username} joined lobby: ${lobbyName}`);
+    });
+
+    // Leave the lobby
+    socket.on('leaveLobby', (username) => {
+        const lobbyName = socket.currentLobby;
+        if (lobbyName && lobbies[lobbyName]) {
+            // Remove the user from the lobby's list
+            lobbies[lobbyName].users = lobbies[lobbyName].users.filter(user => user !== username);
+
+            // Leave the Socket.IO room
+            socket.leave(lobbyName);
+
+            // Notify the lobby about the user leaving
+            io.to(lobbyName).emit('userLeft', {
+                username,
+                message: `${username} has left the lobby ${lobbyName}.`
+        });
+
+            // Send updated list of users in the lobby
+            io.to(lobbyName).emit('lobbyUsers', {
+                lobbyName,
+                users: lobbies[lobbyName].users
+            });
+
+            console.log(`${username} left lobby: ${lobbyName}`);
+        }
+    });
+
+    // Messaging inside the lobby
+    socket.on('message', (message, username) => {
+        const lobbyName = socket.currentLobby;
+        if (lobbyName) {
+            io.to(lobbyName).emit('message', {
+                username,
+                message
+            });
+            console.log(`${username}: ${message}`);
+        }
+    });
+
+    socket.on('disconnect', () => {
+        console.log('A user disconnected');
+    });
+});
+
+// startGrpcServer();
+
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
+server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });

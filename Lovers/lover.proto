@@ -1,0 +1,20 @@
+syntax = "proto3";
+package lover;
+service LoverService {
+  rpc OrderLover (OrderRequest) returns (OrderResponse);
+}
+
+message OrderRequest {
+  string dress = 1;
+  string material = 2;
+  double price = 3;
+  string date = 4;
+}
+
+message OrderResponse {
+  string _id = 1;
+  string dress = 2;
+  string material = 3;
+  double price = 4;
+  string date = 5;
+}
