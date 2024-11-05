@@ -20,7 +20,8 @@ The platform's microservices architecture is ideal for modular development, allo
 
 ### Diagram
 
-![Microservice Diagram Lab 2 Updated](https://github.com/user-attachments/assets/a377903f-26c2-4f11-b718-0a64ada1094b)
+![Microservice Diagram Lab 2 Updated](https://github.com/user-attachments/assets/191b9526-3c13-4750-97be-9efd0768cff2)
+
 
 
 ### Components
