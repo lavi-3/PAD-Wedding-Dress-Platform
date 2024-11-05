@@ -19,7 +19,8 @@ The platform's microservices architecture is ideal for modular development, allo
 ## Service Boundary
 
 ### Diagram
-![Lab2ch1](https://github.com/user-attachments/assets/61809988-e3f3-422d-ba93-756c40bece64)
+
+![Microservice Diagram Lab 2 Updated](https://github.com/user-attachments/assets/a377903f-26c2-4f11-b718-0a64ada1094b)
 
 
 ### Components
