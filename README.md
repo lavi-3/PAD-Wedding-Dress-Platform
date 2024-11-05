@@ -1,84 +1,239 @@
-# PAD-Wedding-Dress-Platform
 
-## Wedding Venue Management System (Microservices with Java & NodeJS)
+# Wedding Dress Platform: Microservices-Based Architecture
 
-This document outlines a microservices architecture for a wedding venue management system. 
+## Overview
 
-## Why Microservices?
+The Wedding Dress Platform is a distributed system built using a microservices architecture, aiming to streamline the management of wedding dress designers and client interactions. This document outlines the architecture, technology stack, data management, and deployment instructions for the platform.
 
-A microservices approach offers several benefits:
+## Application Suitability
 
-* **Modular Development:** Independent development and maintenance of client management and dress management services lead to better organization and faster development cycles.
-* **Scalability:** Services can be scaled independently based on usage. Client management might experience higher traffic than dress management, allowing for optimized resource allocation.
-* **Fault Isolation:** Issues in one service (e.g., client management) won't affect the other (dress management), improving system reliability.
+The platform's microservices architecture is ideal for modular development, allowing independent scaling of different components. This architecture provides the following benefits:
+- **Scalability**: The Wedding Dress Platform is well-suited for a microservices architecture due to the diverse range of functionalities it offers, each benefiting from modular development. By decoupling different parts of the application, such as client management and dress cataloging, the platform can scale specific services independently. This independence ensures that if the`` Dress Management Microservice ``experiences high traffic, it can be scaled without impacting the ``Client Management Microservice``, leading to optimized resource allocation.
+- **Fault Tolerance**: Microservices also enhance fault tolerance. If one service fails, the rest of the system remains operational, increasing the platform’s reliability. This is essential for maintaining uninterrupted user experiences, as clients can still access other parts of the system while an individual service is being fixed or updated.
+- **Security** is another significant advantage. Each microservice can have tailored security protocols, enabling granular control over data access and user authentication. This approach protects sensitive client and designer information, especially when handling data related to personal details and financial transactions.
+
+	The platform's adoption of real-time communication through WebSockets further justifies the use of microservices. The **Lobby Service** for real-time interactions can be managed and scaled independently, ensuring low-latency responses critical for engaging user experiences.
+
+	Lastly, microservices facilitate continuous deployment and development, allowing updates to be applied to specific services without affecting the whole system. This results in shorter development cycles and faster delivery of new features or fixes, providing significant business value and adaptability in a competitive market.
+
+## Service Boundary
+
+### Diagram
+![Lab2ch1](https://github.com/user-attachments/assets/61809988-e3f3-422d-ba93-756c40bece64)
+
+
+### Components
+
+- **API Gateway (Java)**: Serves as the central entry point for incoming client requests, distributing them to the appropriate microservices via REST and ensuring efficient request handling with load balancing capabilities.
+- **Service Discovery (Java)**: Oversees the registration and lookup of microservices, facilitating seamless communication and coordination between services through gRPC.
+- **Client Management Microservice (Node.js)**: Manages client-related functionalities, including user registration, authentication, and profile handling. Connects to a dedicated **MongoDB Client Database** for data persistence.
+- **Dress Management Microservice (Node.js)**: Responsible for operations related to wedding dresses, such as creation, updates, and retrieval of dress information. Utilizes a **MongoDB Dresses Database** for storing and accessing dress data.
+- **Redis Cache**: Deployed in a Docker container, it provides a caching layer for frequently accessed data to boost performance and reduce load on the main database.
+- **ELK Stack (Elasticsearch, Logstash, Kibana)**: Collects, processes, and visualizes logs from various services to enable monitoring, analysis, and troubleshooting of the platform.
+- **ETL Service**: Extracts, transforms, and loads data from the service databases into the **Data Warehouse (MongoDB)** for aggregated analysis and reporting purposes.
+- **Data Warehouse (MongoDB)**: Acts as a centralized repository for data collected and processed by the ETL service, facilitating business intelligence and advanced data analysis.
+
+Your **Technology Stack** section is well-structured and provides a clear overview of the technologies used. Here are a few enhancements and additional details you might want to consider adding:
+
+
+Here's the updated **Technology Stack** section with added lines about Eureka and REST:
 
 ## Technology Stack
 
-* **Client Management Microservice (Java):**
-    * Programming Language: Java
-    * Framework: Spring Boot
-    * Database: MongoDB
-    * Communication: REST APIs
-* **Dress Management Microservice (NodeJS):**
-    * Programming Language: JavaScript (NodeJS)
-    * Framework: Express.js
-    * Database: MongoDB
-    * Communication: REST APIs
+- **Programming Languages**: Java, JavaScript (Node.js)
+- **Frameworks**:
+  - **Java**: Spring Boot for the API Gateway and Service Discovery, ensuring efficient routing, load balancing, and service registration.
+  - **Node.js**: Express.js for the Dress Management Microservice and Client Management Microservice, providing a lightweight and fast server-side environment.
+- **Databases**:
+  - **MongoDB**: NoSQL databases used for storing client, dress, and other relevant data, offering flexibility and scalability.
+- **Caching**:
+  - **Redis**: Utilized for caching frequently accessed data to improve response time and reduce database load, with consistent hashing for load distribution.
+- **Monitoring & Logging**:
+  - **ELK Stack (Elasticsearch, Logstash, Kibana)**: Integrated for centralized log collection, real-time monitoring, and data visualization to aid in system debugging and performance tracking.
+- **Data Processing**:
+  - **ETL Service**: Responsible for extracting, transforming, and loading data into a **Data Warehouse** for advanced analytics and reporting.
+- **Communication**:
+  - **HTTP**: Used for client-to-service communication, ensuring compatibility with web clients.
+  - **REST (Representational State Transfer)**: Employed as an architectural style for defining lightweight, stateless interactions between client and server.
+  - **WebSockets**: Enables real-time bidirectional communication for interactive features like live updates and chat.
+  - **gRPC**: Used for efficient inter-service communication, providing high performance and low latency.
+- **Service Discovery**:
+  - **Eureka**: Utilized for dynamic service registration and discovery, allowing microservices to find and communicate with each other without manual configuration.
+- **Containerization**:
+  - **Docker**: Ensures consistent environments across development, testing, and production with isolated containers for each service.
+  - **Docker Compose**: Simplifies multi-container setup and orchestration for local development and deployment.
 
-## Service Boundaries
+## Data Management
 
-![Microservice Diagram](https://github.com/user-attachments/assets/62d90ddf-fd85-4590-8f83-094289e67b9d)
+### Database Design
+Each microservice uses its own database for maintaining data encapsulation and service autonomy.
+
+#### Dress Management Microservice
+- **Database**: MongoDB
+- **Entry Example**:
+  ```json
+  {
+    "id": 1,
+    "designerId": 2,
+    "name": "Romantic Lace Gown",
+    "description": "Elegant lace gown with intricate details.",
+    "price": 2500,
+    "image": "dress.jpg"
+  }
+  ```
+
+### Data Access and APIs
 
 
-1. **Client Management Microservice:** Manages client registrations, logins, venue searches, bookings, and communication with venues (sending inquiries).
-2. **Dress Management Microservice:** Manages dress designer registrations, logins, dress uploads (including pictures, descriptions, prices), and dress updates/deletions.
+-   **Create Fabric**:
+    
+    -   **Endpoint**: `POST http://localhost:3000/fabric/create`
+    -   **Request Body**:
+        
+     ```   json
+        
+            
+        {
+          "name": "Fabric nr.1",
+          "location": "France",
+          "description": "Best firm"```
+This endpoint is used to create a new fabric entry in the system, specifying its name, location, and description.
+-   **Create Dress Order**:
+    
+    -   **Endpoint**: `POST http://localhost:3001/lover/order`
+    -   **Request Body**:
+        
+     ```   json
+         
+        `{
+          "dress": "Elegant dress",
+          "material": "Cotton",
+          "price": 100,
+          "date": "04/10/2024"
+        }
+      ```
+        
+This endpoint is used to place a dress order, including details such as the dress type, material, price, and order date.
+-   **Create User**:
+    
+    -   **Endpoint**: `POST http://localhost:3001/lover/create`
+    -   **Request Body**:
+        
+     ```   json
+      
+        `{
+          "name": "NewUser",
+          "location": "Moldova",
+          "orderId": "67002cfe84f44e6e4d4c58d1"
+        }
+       ```
+        
+This endpoint registers a new user with their name, location, and associated order ID.
 
-## Data Management (MongoDB)
+3. **Status Endpoint**:
+   - **Endpoint**: `GET /status`
+   - **Response**:
+     ```json
+     {
+       "status": "OK",
+       "uptime": "5000s",
+       "message": "Service is running",
+       "timestamp": "2024-11-04T08:45:00Z"
+     }
+     ```
 
-* **Client Entity (Client Management Microservice):**
+## Real-Time Communication and WebSocket Integration
+WebSockets are a communication protocol that allows persistent, two-way interaction between the client and server, enabling real-time data exchange. In the Wedding Dress Platform, the **Dress Management Microservice** incorporates a **lobby mechanism** to leverage this protocol for seamless, real-time communication. A lobby system is a feature that lets users join or leave a shared virtual space where they can interact live. This setup is particularly valuable for collaborative or interactive sessions, such as virtual dress consultations or group discussions. By enabling clients to connect to a lobby, the platform fosters user engagement and provides immediate feedback and interaction capabilities. This real-time communication enhances the user experience, ensuring updates and messages are transmitted instantly without delays. The integration of WebSockets and a lobby mechanism supports a dynamic and interactive platform environment, catering to user expectations for responsiveness and continuous connectivity.
 
-```json
-{
-  "id": 1,
-  "username": "john_doe",
-  "email": "john.doe@example.com",
-  "weddingDate": "2025-10-25",
-  "guestCount": 100
-}
+### WebSocket Endpoints:
+- **Join Lobby**:
+  - **Event**: `joinLobby`
+  - **Request Payload**:
+    ```json
+    {
+      "lobbyName": "Spring2025Collection",
+      "username": "jane_doe"
+    }
+    ```
+
+- **Send Message**:
+  - **Event**: `message`
+  - **Request Payload**:
+    ```json
+    {
+      "message": "This dress is perfect!",
+      "username": "jane_doe"
+    }
+    ```
+
+- **Leave Lobby**:
+  - **Event**: `leaveLobby`
+  - **Request Payload**:
+    ```json
+    {
+      "username": "jane_doe"
+    }
+    ```
+
+## Deployment Instructions
+
+### Prerequisites:
+Ensure Docker and Docker Compose are installed on your system.
+
+### Environment Configuration:
+Create a `.env` file in the root directory with the following:
+```plaintext
+DB_URL=mongodb://localhost:27017/MyDatabase
+REDIS_URL=redis://localhost:6379
+EUREKA_SERVER=http://localhost:8008/eureka/apps/
 ```
 
-* **Dress Entity (Dress Management Microservice):**
+### Run the Platform:
 
-```json
-{
-  "id": 1,
-  "designerId": 2,
-  "name": "Romantic Lace Gown",
-  "description": "Elegant lace gown with...",
-  "price": 2500,
-  "image": "dress.jpg"
-}
-```
+#### Deployment Instructions
 
-## API Endpoints (Examples)
+To set up and run the Wedding Dress Platform, follow these steps:
 
-**Client Management Microservice:**
+1. **Run Redis**:
+   ```bash
+   docker run --name redis -d redis
+   ```
 
-* `POST /api/clients`: Register a new client.
-* `POST /api/clients/login`: Login a client.
-* `GET /api/venues`: Search for venues based on criteria.
-* `POST /api/venues/{id}/inquire`: Send an inquiry to a venue.
+2. **Run MongoDB Containers**:
+   - **Lover Database**:
+     ```bash
+     docker run --name lover -d -p 27017:27017 -v mongodata:/data/db_lover mongo
+     ```
+   - **Fabric Database**:
+     ```bash
+     docker run --name fabric -d -p 27018:27017 -v mongodata:/data/db_fabric mongo
+     ```
 
-**Dress Management Microservice:**
+3. **Run Redis with Port Mapping**:
+   ```bash
+   docker run --name redis-container -d -p 6379:6379 redis:latest
+   ```
 
-* `POST /api/designers`: Register a new dress designer.
-* `POST /api/designers/login`: Login a dress designer.
-* `POST /api/dresses`: Upload a new dress.
-* `GET /api/dresses`: Get a list of all dresses.
-* `GET /api/dresses/{id}`: Get details of a specific dress.
-* `PUT /api/dresses/{id}`: Update a dress.
+4. **Run the Platform**:
+   ```bash
+   docker-compose up --build
+   ```
 
-## Deployment
+5. **Verify Deployment**:
+   Check the `/status` endpoint for each microservice to ensure they are running properly:
+   ```bash
+   curl http://localhost:3000/status
+   curl http://localhost:3001/status
+   ```
 
-* Regarding containerization, I have opted for Docker. Docker enables the packaging and execution of software within a loosely isolated environment referred to as a container. Deployment and scalability are essential for the implementation of microservices. I will choose Docker Compose for orchestration and scaling.
+6. **Stop the Platform**:
+   ```bash
+   docker-compose down
+   ```
+
+These steps will set up and manage the microservices, databases, and caching needed for the platform's operations.
+
+## Logging and Monitoring
+
+The platform uses a centralized logging system to monitor service health and performance. For advanced log analysis, integrating the ELK Stack (Elasticsearch, Logstash, Kibana) is recommended.
 
