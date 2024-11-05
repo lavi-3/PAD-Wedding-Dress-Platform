@@ -5,7 +5,7 @@
 
 The Wedding Dress Platform is a distributed system built using a microservices architecture, aiming to streamline the management of wedding dress designers and client interactions. This document outlines the architecture, technology stack, data management, and deployment instructions for the platform.
 
-## Application Suitability
+## Why use microservices?
 
 The platform's microservices architecture is ideal for modular development, allowing independent scaling of different components. This architecture provides the following benefits:
 - **Scalability**: The Wedding Dress Platform is well-suited for a microservices architecture due to the diverse range of functionalities it offers, each benefiting from modular development. By decoupling different parts of the application, such as client management and dress cataloging, the platform can scale specific services independently. This independence ensures that if the`` Dress Management Microservice ``experiences high traffic, it can be scaled without impacting the ``Client Management Microservice``, leading to optimized resource allocation.
@@ -32,11 +32,6 @@ The platform's microservices architecture is ideal for modular development, allo
 - **ELK Stack (Elasticsearch, Logstash, Kibana)**: Collects, processes, and visualizes logs from various services to enable monitoring, analysis, and troubleshooting of the platform.
 - **ETL Service**: Extracts, transforms, and loads data from the service databases into the **Data Warehouse (MongoDB)** for aggregated analysis and reporting purposes.
 - **Data Warehouse (MongoDB)**: Acts as a centralized repository for data collected and processed by the ETL service, facilitating business intelligence and advanced data analysis.
-
-Your **Technology Stack** section is well-structured and provides a clear overview of the technologies used. Here are a few enhancements and additional details you might want to consider adding:
-
-
-Here's the updated **Technology Stack** section with added lines about Eureka and REST:
 
 ## Technology Stack
 
@@ -96,7 +91,8 @@ Each microservice uses its own database for maintaining data encapsulation and s
         {
           "name": "Fabric nr.1",
           "location": "France",
-          "description": "Best firm"```
+          "description": "Best firm"
+     ```
 This endpoint is used to create a new fabric entry in the system, specifying its name, location, and description.
 -   **Create Dress Order**:
     
@@ -105,7 +101,7 @@ This endpoint is used to create a new fabric entry in the system, specifying its
         
      ```   json
          
-        `{
+        {
           "dress": "Elegant dress",
           "material": "Cotton",
           "price": 100,
@@ -121,7 +117,7 @@ This endpoint is used to place a dress order, including details such as the dres
         
      ```   json
       
-        `{
+        {
           "name": "NewUser",
           "location": "Moldova",
           "orderId": "67002cfe84f44e6e4d4c58d1"
