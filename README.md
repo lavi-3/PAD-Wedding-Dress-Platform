@@ -235,5 +235,5 @@ These steps will set up and manage the microservices, databases, and caching nee
 
 ## Logging and Monitoring
 
-The platform uses a centralized logging system to monitor service health and performance. For advanced log analysis, integrating the ELK Stack (Elasticsearch, Logstash, Kibana) is recommended.
+The platform uses a centralized logging system to monitor service health and performance. For advanced log analysis, integrating the ELK Stack (Elasticsearch, Logstash, Kibana).
 
